@@ -1,0 +1,31 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+exports_files(["LICENSE"])
+
+# NOTE: This target is not hermetic.
+# Host system must meet requirements outlined in: https://wiki.postgresql.org/wiki/Compile_and_Install_from_source_code
+configure_make(
+    name = "configure_make",
+    build_data = [
+        "@zoneinfo",
+    ],
+    configure_in_place = True,
+    configure_options = [
+        "--with-system-tzdata=$(execpath @zoneinfo)",
+        "--without-zlib",
+        "--without-readline",
+    ],
+    lib_source = "@postgresql",
+    out_headers_only = True,
+)
+
+filegroup(
+    name = "postgres",
+    srcs = [
+        ":configure_make",
+    ],
+    output_group = "gen_dir",
+    visibility = [
+        "//visibility:public",
+    ],
+)

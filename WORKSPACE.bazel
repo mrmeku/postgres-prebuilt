@@ -1,0 +1,32 @@
+# Marks this as the root of a Bazel workspace
+workspace(name = "postgres-prebuilt")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//zoneinfo:defs.bzl", "zoneinfo_repository")
+
+zoneinfo_repository(name = "zoneinfo")
+
+http_archive(
+    name = "postgresql",
+    build_file_content = """
+filegroup(
+    name = "postgresql",
+    srcs = glob(["*/**"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "2b8201047ec81acd1bad29dba278d788e7891b9c3e8232eda16bb29dec8131c7",
+    strip_prefix = "postgresql-16.2",
+    urls = ["https://ftp.postgresql.org/pub/source/v16.2/postgresql-16.2.tar.gz"],
+)
+
+http_archive(
+    name = "rules_foreign_cc",
+    integrity = "sha256-mhSLI++WXM4bxZ4LtAEWp83yKOPWXSF4dJtcrcBenc4=",
+    strip_prefix = "rules_foreign_cc-7ce62009557d73da9aa0d2a1ca7eded49078b3cf",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/7ce62009557d73da9aa0d2a1ca7eded49078b3cf.zip",
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies()
