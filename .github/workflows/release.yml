@@ -1,0 +1,26 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: mrmeku/postgres-prebuilt-bazel
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          bazel build //:for_all_platforms --config=release
+          mv bazel-out/darwin_arm64-opt/bin/postgres/copy_configure_make/configure_make postgres_darwin_arm64
+          mv bazel-out/darwin_amd64-opt/bin/postgres/copy_configure_make/configure_make postgres_darwin_amd64
+          mv bazel-out/linux_arm64_musl-opt/bin/postgres/copy_configure_make/configure_make postgres_linux_arm64
+          mv bazel-bin/postgres/copy_configure_make/configure_make  postgres_linux_amd64
+          shasum -a 256 tar* > SHA256.txt
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./postgres_*
+            SHA256.txt

@@ -1,0 +1,37 @@
+# Marks this as the root of a Bazel workspace
+workspace(name = "postgres-prebuilt")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//zoneinfo:defs.bzl", "zoneinfo_repository")
+
+zoneinfo_repository(name = "zoneinfo")
+
+http_archive(
+    name = "postgresql",
+    build_file_content = """filegroup(name = "postgresql", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
+    patch_args = [
+        "-E",
+        "-p1",
+    ],
+    patches = [
+        # zig version 0.12.0 does not support the flag `--enable-new-dtags`
+        # Can remove when hermetic_cc_toolchain has a newer version of zig
+        "//patches:enable-new-dtags.patch",
+    ],
+    sha256 = "2c8f3f898e32a4a68bca30d21a78408cb37d3b501629448e0521aaaa93ebb5dd",
+    strip_prefix = "postgresql-14.11",
+    urls = [
+        "https://ftp.postgresql.org/pub/source/v14.11/postgresql-14.11.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "rules_foreign_cc",
+    integrity = "sha256-mhSLI++WXM4bxZ4LtAEWp83yKOPWXSF4dJtcrcBenc4=",
+    strip_prefix = "rules_foreign_cc-7ce62009557d73da9aa0d2a1ca7eded49078b3cf",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/7ce62009557d73da9aa0d2a1ca7eded49078b3cf.zip",
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies()

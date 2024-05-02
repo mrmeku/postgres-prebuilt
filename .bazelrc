@@ -1,0 +1,19 @@
+build --dynamic_mode=off
+build --experimental_platform_in_output_dir
+
+# Config used by run-docker.sh (on arm64 macs)
+build:docker --platforms=@zig_sdk//libc_aware/platform:linux_arm64_musl
+build:docker --disk_cache=/bazel-docker-cache
+
+# Config used by release script
+build:release --platforms=@zig_sdk//libc_aware/platform:linux_amd64_musl
+
+build --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build --host_action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build --incompatible_strict_action_env
+
+# Compilation Flags
+build --compilation_mode=opt --strip=always
+build --copt -ffunction-sections
+build --copt -fdata-sections
